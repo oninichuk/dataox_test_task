@@ -4,3 +4,8 @@ debugpy
 psycopg2-binary
 celery
 redis
+urllib3
+aiohttp-retry
+requests
+selenium
+django-celery-beat
