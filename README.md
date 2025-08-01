@@ -1,4 +1,6 @@
 # dataox_test_task
+## Warning:
+Considering fact that Financial Times set articles limit per month, it made impossible to retrieve articles web pages but I implemented all necessary features using articles that I got before(when I didnt exceed limit). I didn't use any kind of Proxy, implemented only technical part.
 
 ## Introduction
 System was implemented as django project which integrates with such libraries like asyncio, aiohttp(asynchronous requests), selenium
