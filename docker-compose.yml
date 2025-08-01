@@ -48,7 +48,7 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - unique_pgdata:/var/lib/postgresql/data
     networks:
       - project_network
 
@@ -90,7 +90,7 @@ services:
     ports:
       - "6380:6379"
 volumes:
-  pgdata:
+  unique_pgdata:
 
 networks:
   project_network:
