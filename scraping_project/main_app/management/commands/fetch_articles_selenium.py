@@ -1,6 +1,4 @@
 from django.core.management.base import BaseCommand
-
-#FOR FETCHING URLS
 from datetime import timedelta
 from main_app.utils import collect_ft_articles_primary_data, FTParserManager
 from main_app.models import Article

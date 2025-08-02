@@ -23,13 +23,13 @@ class ArticleTestCase(TestCase):
 
     def test_async_requests_manager(self):
         # Collect urls of relevant articles from FT list pages
-        articles_urls = collect_ft_articles_primary_data(timedelta(hours=1))
+        primary_articles = collect_ft_articles_primary_data(timedelta(hours=1))
 
-        if articles_urls:
-            print(f'Found {len(articles_urls)} articles')
-            requests_manager = AsyncRequestsManager(articles_urls)
+        if primary_articles:
+            print(f'Found {len(primary_articles)} articles')
+            requests_manager = AsyncRequestsManager(primary_articles)
             # Get articles web pages
-            requests_manager.run_all_requests()
+            requests_manager.run_all_processes()
 
             if requests_manager.results:
                 self.assertTrue(isinstance(requests_manager.results[0]['url'], str) and requests_manager.results[0]['url'].find('http') == 0, 'Didn\'t retrieve article URL')

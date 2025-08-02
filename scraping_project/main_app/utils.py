@@ -15,10 +15,11 @@ import json
 import logging
 import math
 import os
+import inspect
 
 # Retrieve articles primary data in Financial Times list pages. 
 # By default it will retrieve only URLs, optionally it can retrieve corresponing articles pages HTML
-def collect_ft_articles_primary_data(period: timedelta, get_html=False) -> Union[list, bool]:
+def collect_ft_articles_primary_data(period: timedelta, get_html=False) -> Union[list[dict], bool]:
     # All collected articles which match requested period
     all_articles = []
 
@@ -109,7 +110,7 @@ def collect_ft_articles_primary_data(period: timedelta, get_html=False) -> Union
                                             logger.info(f'Request "{article_url}" has failed(3 attempts). Exception: {e}')
                             else:
                                 # Collect only article url
-                                articles.append(article_url)
+                                articles.append({'url': article_url})
                     else:
                         # If we found at least one not relevant article then we stop search 
                         is_end = True
@@ -146,65 +147,81 @@ def collect_ft_articles_primary_data(period: timedelta, get_html=False) -> Union
     logger.info(f'Fetched {len(all_articles)} articles. Fetching articles has finished')
     return all_articles
 
-class AsyncRequestsManager:
-    def __init__(self, urls: list[str]):
-        self.threads_number = int(os.getenv('ASYNC_REQUESTS_THREADS'))
+class AsyncProcessesManager:
+    def __init__(self, input: list[dict], run_method_name: str, **kwargs):
+        self.threads_number = 5
         self.logger = logging.getLogger('main_app')
-        self.urls: list[str] = urls
+        self.input: list = input
+        self.run_method_name: str = run_method_name
+        self.results: list = []
+        self.process_name: str = kwargs['process_name'] if 'process_name' in kwargs else f'{self.__class__.__name__} process'
+        
+    def run_all_processes(self):
+        # Check if class contains run method
+        if not self.run_method_name.strip():
+            return False
+
+        run_method = getattr(self, self.run_method_name, False)
+
+        if run_method is False or not inspect.ismethod(run_method):
+            return False
+        
+        self.run_method = run_method
+        asyncio.run(self.all_processes())
+        return True
+
+    async def all_processes(self):
+        self.logger.info(f'{self.process_name} has started')
+
+        input_length = len(self.input)
+        # Calculate actual number of threads
+        threads_number = input_length if input_length < self.threads_number else self.threads_number
+        # Number of iterations for creating threads
+        approaches = math.ceil(input_length/threads_number)
+
+        # Check if we are gonna run async method
+        is_run_method_async = inspect.iscoroutinefunction(self.run_method)
+
+        # Running processes simultaneously
+        for i in range(approaches):
+            start_index = i * threads_number
+            slice_end = (i + 1) * threads_number
+            slice_input = self.input[start_index:slice_end]
+            # Creating tasks for corresponding method. In case of not async method we will use "asyncio.to_thread"
+            tasks = [self.run_method(**m_kwargs) for m_kwargs in slice_input] if is_run_method_async else [asyncio.to_thread(self.run_method, **m_kwargs) for m_kwargs in slice_input]
+            current_results = await asyncio.gather(*tasks)
+            self.results.extend(current_results)
+
+        self.logger.info(f'{self.process_name} has finished')
+class AsyncRequestsManager(AsyncProcessesManager):
+    def __init__(self, input: list):
+        super().__init__(input, 'fetch', process_name='Getting articles web pages')
+        self.threads_number = int(os.getenv('ASYNC_REQUESTS_THREADS'))
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         }
-
-        # PROVIDE YOUR OWN PROXY
-        #self.proxy = '47.236.163.74:8080'
-
-        self.results: list[dict] = []
-
-    def run_all_requests(self):
-        asyncio.run(self.fetch_all())
-
-    async def fetch_all(self):
-        self.logger.info(f'Getting html pages of articles has started')
-        urls_length = len(self.urls)
-        # Calculate actual number of threads
-        threads_number = urls_length if urls_length < self.threads_number else self.threads_number
-        # Number of iterations for creating threads
-        approaches = math.ceil(urls_length/threads_number)
-
-        # Sending requests simultaneously
-        for i in range(approaches):
-            start_index = i * threads_number
-            slice_end = (i + 1) * threads_number
-            slice_urls = self.urls[start_index:slice_end]
-            tasks = [self.fetch(url) for url in slice_urls]
-            current_results = await asyncio.gather(*tasks)
-            self.results.extend(current_results)
-        self.logger.info(f'Getting html pages of articles has finished')
             
-    async def fetch(self, url) -> dict:
+    async def fetch(self, **kwargs) -> dict:
         attempts = 0
-
         while attempts < 3:
             try:
                 async with aiohttp.ClientSession() as session:
                     # YOU CAN ADD ADDITIONAL ARGUMENT proxy=f"https://{self.proxy} WITH YOUR OWN PROXY
-                    async with session.get(url, timeout=10, headers=self.headers) as response: 
+                    async with session.get(kwargs['url'], timeout=10, headers=self.headers) as response: 
                         html = await response.text()
-                        return {'url': url, 'html': html}
+                        return {'url': kwargs['url'], 'html': html}
             except Exception as e:
                 attempts += 1
                 if attempts < 3:
                     # Make pause before next attempt
                     await asyncio.sleep(3)
-                if attempts == 3:
-                    self.logger.info(f'Request has failed(3 attempts). Exception: {e}')
-        return {'url': url, 'html': False}
+        return {'url': kwargs['url'], 'html': False}
     
-class FTParserManager:
-    def __init__(self, html_pages: list[dict]):
+class FTParserManager(AsyncProcessesManager):
+    def __init__(self, input: list):
+        super().__init__(input, 'parse_and_save_article', process_name='Getting articles web pages')
         self.threads_number = int(os.getenv('PARSE_ARTICLE_THREADS'))
-        self.logger = logging.getLogger('main_app')
         self.patterns = {
                             'title': r'<span class="headline__text".*?>(?:\s|\\t)*?(.+?)(?:\s|\\t)*?<\/span>',
                             'content': r'<article id="article-body".*?>((?:\s|.)+?)<\/article>',
@@ -216,26 +233,24 @@ class FTParserManager:
                             'related_articles': r'<div class="o-teaser__heading".*?>(?:\s|\\t)*?<a .*?href="(.+?)"',
         }
         self.mandatory_patterns = ['title', 'content', 'author', 'published_at']
-        self.html_pages = html_pages
-        self.results: list[dict] = []
 
-    def parse_and_save_article(self, html_page: dict) -> dict:
-        default_response = html_page.copy()
+    def parse_and_save_article(self, **kwargs) -> dict:
+        default_response = {'url': kwargs['url'], 'html': kwargs['html']}
         default_response['article'] = False
         
-        if not html_page['html']:
+        if not kwargs['html']:
             return default_response
 
         all_matches = {}
         
         for spattern in ['title', 'content', 'published_at', 'subtitle', 'image_url']:
-            all_matches[spattern] = re.search(self.patterns[spattern], html_page['html'])
+            all_matches[spattern] = re.search(self.patterns[spattern], kwargs['html'])
             if spattern in self.mandatory_patterns and not all_matches[spattern]:
                 self.logger.info(f'Mandatory pattern "{spattern}" hasn\'t retrieved value')
                 return default_response
         
         for mpattern in ['author', 'tags', 'related_articles']:
-            all_matches[mpattern] = list(re.finditer(self.patterns[mpattern], html_page['html']))
+            all_matches[mpattern] = list(re.finditer(self.patterns[mpattern], kwargs['html']))
             if mpattern in self.mandatory_patterns and len(all_matches[mpattern]) == 0:
                 self.logger.info(f'Mandatory pattern "{mpattern}" hasn\'t retrieved value')
                 return default_response
@@ -253,7 +268,7 @@ class FTParserManager:
 
         try:
             new_article = Article.objects.create(
-                                    url=html_page['url'],
+                                    url=kwargs['url'],
                                     title=all_matches['title'].group(1),
                                     content=content,
                                     author=authors,
@@ -270,28 +285,7 @@ class FTParserManager:
             self.logger.info(f'Couldn\'t add new Article record. Exception: {e}')
             return default_response
         
-        return default_response 
-
-    async def parse_and_save_all_articles(self):
-        self.logger.info(f'Parsing and saving articles has started')
-        html_pages_length = len(self.html_pages)
-        # Calculate actual number of threads
-        threads_number = html_pages_length if html_pages_length < self.threads_number else self.threads_number
-        # Number of iterations for creating threads
-        approaches = math.ceil(html_pages_length/threads_number)
-
-        # Parsing articles web pages simultaneously
-        for i in range(approaches):
-            start_index = i * threads_number
-            slice_end = (i + 1) * threads_number
-            slice_pages = self.html_pages[start_index:slice_end]
-            tasks = [asyncio.to_thread(self.parse_and_save_article, html_page) for html_page in slice_pages]
-            current_results = await asyncio.gather(*tasks)
-            self.results.extend(current_results)
-        self.logger.info(f'Parsing and saving articles has finished')
-
-    def run_all_processes(self):
-        asyncio.run(self.parse_and_save_all_articles())
+        return default_response
             
         
         
