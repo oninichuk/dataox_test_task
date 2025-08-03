@@ -7,29 +7,51 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Article',
+            name="Article",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('url', models.CharField(max_length=2048)),
-                ('title', models.CharField(max_length=500)),
-                ('content', models.TextField()),
-                ('author', models.CharField(max_length=255)),
-                ('published_at', models.DateTimeField(null=True)),
-                ('scraped_at', models.DateTimeField(auto_now_add=True)),
-                ('subtitle', models.CharField(blank=True, default='', max_length=700)),
-                ('tags', models.TextField()),
-                ('image_url', models.CharField(blank=True, default='', max_length=2048)),
-                ('word_count', models.IntegerField(default=0)),
-                ('reading_time', models.CharField(blank=True, default='', max_length=50)),
-                ('related_articles', models.TextField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("url", models.CharField(max_length=2048)),
+                ("title", models.CharField(max_length=500)),
+                ("content", models.TextField()),
+                ("author", models.CharField(max_length=255)),
+                ("published_at", models.DateTimeField(null=True)),
+                ("scraped_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "subtitle",
+                    models.CharField(blank=True, default="", max_length=700),
+                ),
+                ("tags", models.TextField()),
+                (
+                    "image_url",
+                    models.CharField(blank=True, default="", max_length=2048),
+                ),
+                ("word_count", models.IntegerField(default=0)),
+                (
+                    "reading_time",
+                    models.CharField(blank=True, default="", max_length=50),
+                ),
+                ("related_articles", models.TextField()),
             ],
             options={
-                'indexes': [models.Index(fields=['title'], name='title_index'), models.Index(fields=['author'], name='author_index'), models.Index(fields=['published_at'], name='published_at_index'), models.Index(fields=['scraped_at'], name='scraped_at_index'), models.Index(fields=['word_count'], name='word_count_index')],
+                "indexes": [
+                    models.Index(fields=["title"], name="title_index"),
+                    models.Index(fields=["author"], name="author_index"),
+                    models.Index(fields=["published_at"], name="published_at_index"),
+                    models.Index(fields=["scraped_at"], name="scraped_at_index"),
+                    models.Index(fields=["word_count"], name="word_count_index"),
+                ],
             },
         ),
     ]

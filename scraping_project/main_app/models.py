@@ -1,5 +1,6 @@
 from django.db import models
 
+
 # Create your models here.
 class Article(models.Model):
     url = models.CharField(max_length=2048, unique=True)
@@ -22,10 +23,9 @@ class Article(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(name='title_index', fields=['title']),
-            models.Index(name='author_index', fields=['author']),
-            models.Index(name='published_at_index', fields=['published_at']),
-            models.Index(name='scraped_at_index', fields=['scraped_at']),
-            models.Index(name='word_count_index', fields=['word_count']),
+            models.Index(name="title_index", fields=["title"]),
+            models.Index(name="author_index", fields=["author"]),
+            models.Index(name="published_at_index", fields=["published_at"]),
+            models.Index(name="scraped_at_index", fields=["scraped_at"]),
+            models.Index(name="word_count_index", fields=["word_count"]),
         ]
-

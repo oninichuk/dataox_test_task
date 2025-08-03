@@ -6,11 +6,11 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('main_app', '0003_remove_log_created_at_index_and_more'),
+        ("main_app", "0003_remove_log_created_at_index_and_more"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='Log',
+            name="Log",
         ),
     ]

@@ -6,66 +6,66 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('main_app', '0002_alter_article_url_log'),
+        ("main_app", "0002_alter_article_url_log"),
     ]
 
     operations = [
         migrations.RemoveIndex(
-            model_name='log',
-            name='created_at_index',
+            model_name="log",
+            name="created_at_index",
         ),
         migrations.RemoveIndex(
-            model_name='log',
-            name='category_index',
+            model_name="log",
+            name="category_index",
         ),
         migrations.RemoveIndex(
-            model_name='log',
-            name='created_at_category_index',
+            model_name="log",
+            name="created_at_category_index",
         ),
         migrations.RenameField(
-            model_name='log',
-            old_name='content',
-            new_name='message',
+            model_name="log",
+            old_name="content",
+            new_name="message",
         ),
         migrations.RenameField(
-            model_name='log',
-            old_name='created_at',
-            new_name='timestamp',
+            model_name="log",
+            old_name="created_at",
+            new_name="timestamp",
         ),
         migrations.RemoveField(
-            model_name='log',
-            name='category',
+            model_name="log",
+            name="category",
         ),
         migrations.AddField(
-            model_name='log',
-            name='func_name',
-            field=models.CharField(default='', max_length=150),
+            model_name="log",
+            name="func_name",
+            field=models.CharField(default="", max_length=150),
         ),
         migrations.AddField(
-            model_name='log',
-            name='level',
-            field=models.CharField(default='', max_length=150),
+            model_name="log",
+            name="level",
+            field=models.CharField(default="", max_length=150),
         ),
         migrations.AddField(
-            model_name='log',
-            name='logger_name',
-            field=models.CharField(default='', max_length=150),
+            model_name="log",
+            name="logger_name",
+            field=models.CharField(default="", max_length=150),
         ),
         migrations.AddField(
-            model_name='log',
-            name='module',
-            field=models.CharField(default='', max_length=150),
+            model_name="log",
+            name="module",
+            field=models.CharField(default="", max_length=150),
         ),
         migrations.AddIndex(
-            model_name='log',
-            index=models.Index(fields=['timestamp'], name='timestamp_index'),
+            model_name="log",
+            index=models.Index(fields=["timestamp"], name="timestamp_index"),
         ),
         migrations.AddIndex(
-            model_name='log',
-            index=models.Index(fields=['level'], name='level_index'),
+            model_name="log",
+            index=models.Index(fields=["level"], name="level_index"),
         ),
         migrations.AddIndex(
-            model_name='log',
-            index=models.Index(fields=['timestamp', 'level'], name='timestamp_level_index'),
+            model_name="log",
+            index=models.Index(fields=["timestamp", "level"], name="timestamp_level_index"),
         ),
     ]

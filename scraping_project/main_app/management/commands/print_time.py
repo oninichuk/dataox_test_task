@@ -1,7 +1,8 @@
 from django.core.management.base import BaseCommand
 
-#FOR FETCHING URLS
+# FOR FETCHING URLS
 from datetime import datetime, timezone
+
 
 class Command(BaseCommand):
 

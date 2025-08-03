@@ -6,25 +6,40 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('main_app', '0001_initial'),
+        ("main_app", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='article',
-            name='url',
+            model_name="article",
+            name="url",
             field=models.CharField(max_length=2048, unique=True),
         ),
         migrations.CreateModel(
-            name='Log',
+            name="Log",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('category', models.CharField(max_length=70)),
-                ('content', models.TextField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("category", models.CharField(max_length=70)),
+                ("content", models.TextField()),
             ],
             options={
-                'indexes': [models.Index(fields=['created_at'], name='created_at_index'), models.Index(fields=['category'], name='category_index'), models.Index(fields=['created_at', 'category'], name='created_at_category_index')],
+                "indexes": [
+                    models.Index(fields=["created_at"], name="created_at_index"),
+                    models.Index(fields=["category"], name="category_index"),
+                    models.Index(
+                        fields=["created_at", "category"],
+                        name="created_at_category_index",
+                    ),
+                ],
             },
         ),
     ]

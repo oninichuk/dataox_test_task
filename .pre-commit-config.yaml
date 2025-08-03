@@ -1,0 +1,18 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.1.0  # use the latest stable version
+    hooks:
+      - id: flake8
+
+  - repo: https://github.com/psf/black
+    rev: 24.4.2  # latest version at time of writing
+    hooks:
+      - id: black
+
+  - repo: https://github.com/pre-commit/mirrors-autopep8
+    rev: v1.7.0
+    hooks:
+      - id: autopep8
+        args: [--in-place, --aggressive, --aggressive, --max-line-length=300]
