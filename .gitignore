@@ -2,3 +2,5 @@ __pycache__
 .env
 scraping_project/logs/django.log
 scraping_project/celerybeat-schedule
+scraping_project/debug_manage.py
+.vscode
